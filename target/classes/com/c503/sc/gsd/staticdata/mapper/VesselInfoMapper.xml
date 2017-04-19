@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.c503.sc.gsd.staticdata.dao.IVesselInfoDao" >
+	<resultMap id="BaseResultMap" type="com.c503.sc.gsd.staticdata.model.VesselInfo" >
+		<result column="id" 				property="id"				 jdbcType="VARCHAR" />
+		<result column="ship_name" 			property="vesselName"		 jdbcType="VARCHAR" />
+		<result column="ship_type" 			property="vesselType"		 jdbcType="VARCHAR" />
+		<result column="total_ton" 			property="ton"			     jdbcType="NUMERIC" />
+		<result column="total_power" 		property="power"		     jdbcType="NUMERIC" />
+		<result column="shipbody_material" 	property="material"	         jdbcType="VARCHAR" />
+		<result column="max_speed" 		    property="maxSpeed"		     jdbcType="NUMERIC" />
+		<result column="captain" 		    property="captainName"		 jdbcType="VARCHAR" />
+		<result column="captain_mobile" 	property="captainTel"	     jdbcType="VARCHAR" />
+		<result column="ship_owner" 		property="vesselOwner"		 jdbcType="VARCHAR" />
+		<result column="name" 			    property="vesselRegion"		 jdbcType="VARCHAR" />
+		<result column="dept_id" 			property="deptId"			 jdbcType="VARCHAR" />
+		<result column="create_time" 		property="loadTime" 		 jdbcType="TIMESTAMP" />
+		<result column="update_time"        property="operTime"          jdbcType="TIMESTAMP" />
+	</resultMap>
+	
+	<!-- 根据时间段查询出该时间（可配置）段内的结果 -->
+	<select id="findByTime" parameterType="map" resultMap="BaseResultMap">
+		SELECT
+			s.id,
+			ship_name,
+			ship_type,
+			total_ton,
+			total_power,
+			shipbody_material,
+			max_speed,
+			captain,
+			captain_mobile,
+			ship_owner,
+			b.name,
+			dept_id,
+			s.create_time,
+			s.update_time
+		FROM
+			v_ship_info s
+		LEFT JOIN t_area b on s.area_code = b.code
+		WHERE
+			s.update_time >= #{startTime,jdbcType=TIMESTAMP}
+		AND s.update_time <![CDATA[<]]> #{endTime,jdbcType=TIMESTAMP}
+		ORDER BY
+			s.update_time
+	</select>	
+	
+	<!-- 最小时间 -->
+	<select id="findMinTime" resultType="date">
+		SELECT
+			min(update_time)
+		FROM
+			v_ship_info
+	</select>
+	
+</mapper>

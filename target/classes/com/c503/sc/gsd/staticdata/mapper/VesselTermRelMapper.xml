@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.c503.sc.gsd.staticdata.dao.IVesselTermRelationDao" >
+	<resultMap id="BaseResultMap" type="com.c503.sc.gsd.staticdata.model.VesselTermRelation" >
+		<result column="ship_id" 			property="modShipId"		  jdbcType="VARCHAR" />
+		<result column="terminal_type" 		property="modTerminalType"	  jdbcType="VARCHAR" />
+		<result column="terminal_no" 	    property="modTermNo"	      jdbcType="VARCHAR" />
+		<result column="updated_time"       property="operTime"           jdbcType="TIMESTAMP" />
+	</resultMap>
+	
+	<sql id="Base_sql">
+		SELECT
+			ship_id,
+			terminal_no,
+			terminal_type,
+			CASE WHEN updated_time IS NULL THEN created_time
+			ELSE updated_time END updated_time
+		FROM
+			t_terminal_register
+		WHERE
+			remove = '0'
+		UNION ALL
+			SELECT
+				ship_id,
+				mmsi AS terminal_no,
+				ais_type AS terminal_type,
+				CASE WHEN updated_time IS NULL THEN created_time
+				ELSE updated_time END updated_time
+			FROM
+				t_ais_register
+			WHERE
+				remove = '0'
+			AND status = '152001001'
+	</sql>
+	
+	<!-- 根据时间段查询出该时间（可配置）段内的结果 -->
+	<select id="findByTime" parameterType="map" resultMap="BaseResultMap">
+		SELECT 
+			ship_id,
+			terminal_type,
+			terminal_no,
+			updated_time 
+		from 
+			(<include refid="Base_sql" />)
+		WHERE
+			updated_time <![CDATA[>=]]> #{startTime,jdbcType=TIMESTAMP}
+		AND updated_time <![CDATA[<]]> #{endTime,jdbcType=TIMESTAMP}
+		ORDER BY
+			updated_time
+	</select>	
+	
+	<!-- 最小时间 -->
+	<select id="findMinTime" resultType="date">
+		SELECT min(updated_time) from (
+		<include refid="Base_sql" />)
+	</select>
+	
+</mapper>

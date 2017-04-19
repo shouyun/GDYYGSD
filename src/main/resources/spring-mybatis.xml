@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+    http://www.springframework.org/schema/context
+    http://www.springframework.org/schema/context/spring-context-3.2.xsd
+    http://www.springframework.org/schema/tx
+    http://www.springframework.org/schema/tx/spring-tx-3.2.xsd
+    http://www.springframework.org/schema/aop
+    http://www.springframework.org/schema/aop/spring-aop-3.2.xsd
+    http://www.springframework.org/schema/util
+    http://www.springframework.org/schema/util/spring-util-3.2.xsd">
+
+	<!-- 扫描文件（自动将servicec层注入） -->
+	<context:component-scan base-package="com.c503.sc.**.service" />
+	<context:component-scan base-package="com.c503.sc.gsd.init" />
+
+	<!-- 引入jdbc配置文件 -->
+	<context:property-placeholder location="classpath:jdbc.properties" />
+
+	<!-- 配置gdyy业务数据源 -->
+	<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource"
+		init-method="init" destroy-method="close">
+		<property name="driverClassName">
+			<value>${jdbc_driverClassName}</value>
+		</property>
+		<property name="url">
+			<value>${jdbc_url}</value>
+		</property>
+		<property name="username">
+			<value>${jdbc_username}</value>
+		</property>
+		<property name="password">
+			<value>${jdbc_password}</value>
+		</property>
+		<!-- 连接池最大使用连接数 -->
+		<property name="maxActive">
+			<value>${maxActive}</value>
+		</property>
+		<!-- 初始化连接大小 -->
+		<property name="initialSize">
+			<value>${initialSize}</value>
+		</property>
+		<!-- 获取连接最大等待时间 -->
+		<property name="maxWait">
+			<value>${maxWait}</value>
+		</property>
+		<!-- 连接池最大空闲 -->
+		<property name="maxIdle">
+			<value>${maxIdle}</value>
+		</property>
+		<!-- 连接池最小空闲 -->
+		<property name="minIdle">
+			<value>${minIdle}</value>
+		</property>
+		<!-- 自动清除无用连接 -->
+		<property name="removeAbandoned">
+			<value>${removeAbandoned}</value>
+		</property>
+		<!-- 清除无用连接的等待时间 -->
+		<property name="removeAbandonedTimeout">
+			<value>${removeAbandonedTimeout}</value>
+		</property>
+		<!-- 连接属性 -->
+		<property name="connectionProperties">
+			<value>${connectionProperties}</value>
+		</property>
+	</bean>
+	
+	<!-- 配置日志数据源 -->
+	<bean id="authDataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close">
+		<property name="driverClassName">
+			<value>${authorg_jdbc_driverClassName}</value>
+		</property>
+		<property name="url">
+			<value>${authorg_jdbc_url}</value>
+		</property>
+		<property name="username">
+			<value>${authorg_jdbc_username}</value>
+		</property>
+		<property name="password">
+			<value>${authorg_jdbc_password}</value>
+		</property>
+		<!-- 连接池最大使用连接数 -->
+		<property name="maxActive">
+			<value>${authorg_maxActive}</value>
+		</property>
+		<!-- 初始化连接大小 -->
+		<property name="initialSize">
+			<value>${authorg_initialSize}</value>
+		</property>
+		<!-- 获取连接最大等待时间 -->
+		<property name="maxWait">
+			<value>${authorg_maxWait}</value>
+		</property>
+		<!-- 连接池最大空闲 -->
+		<property name="maxIdle">
+			<value>${authorg_maxIdle}</value>
+		</property>
+		<!-- 连接池最小空闲 -->
+		<property name="minIdle">
+			<value>${authorg_minIdle}</value>
+		</property>
+		<!-- 自动清除无用连接 -->
+		<property name="removeAbandoned">
+			<value>${authorg_removeAbandoned}</value>
+		</property>
+		<!-- 清除无用连接的等待时间 -->
+		<property name="removeAbandonedTimeout">
+			<value>${authorg_removeAbandonedTimeout}</value>
+		</property>
+		<!-- 连接属性 -->
+		<property name="connectionProperties">
+			<value>${authorg_connectionProperties}</value>
+		</property>
+		<!-- 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 -->
+		<property name="timeBetweenEvictionRunsMillis" value="60000" />
+		<!-- 配置一个连接在池中最小生存的时间，单位是毫秒 -->
+		<property name="minEvictableIdleTimeMillis" value="300000" />
+	</bean>
+
+	<!-- 扫描dao对应的mapper文件 -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<!--打印日志 -->
+		<property name="configLocation" value="classpath:mybatis-config.xml"></property>
+		<!-- 自动扫描entity目录, 省掉Configuration.xml里的手工配置 -->
+		<property name="mapperLocations"
+			value="classpath:com/c503/sc/gsd/staticdata/mapper/*.xml" />
+		<property name="configurationProperties">
+			<props>
+				<prop key="dialect">postgresql</prop>
+			</props>
+		</property>
+	</bean>
+
+    <!-- 扫描dao接口 -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.c503.sc.gsd.staticdata.dao" />
+		<property name="sqlSessionFactoryBeanName" value="sqlSessionFactory" />
+	</bean>
+	
+	<!-- 扫描dao对应的mapper文件 -->
+	<bean id="authsqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="authDataSource" />
+		<!--打印日志 -->
+		<property name="configLocation" value="classpath:mybatis-config.xml"></property>
+		<!-- 自动扫描entity目录, 省掉Configuration.xml里的手工配置 -->
+		<property name="mapperLocations"
+			value="classpath:com/c503/sc/gsd/auth/mapper/*.xml" />
+		<property name="configurationProperties">
+			<props>
+				<prop key="dialect">postgresql</prop>
+			</props>
+		</property>
+	</bean>
+
+    <!-- 扫描dao接口 -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.c503.sc.gsd.auth.dao" />
+		<property name="sqlSessionFactoryBeanName" value="authsqlSessionFactory" />
+	</bean>
+	
+	<!-- 读取配置文件properties -->
+	<bean id="configProperties" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+		<property name="locations">
+			<list>
+				<value>classpath*:gsd.properties</value>
+			</list>
+		</property>
+	</bean>
+	<bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PreferencesPlaceholderConfigurer">
+		<property name="properties" ref="configProperties"></property>
+	</bean>
+
+</beans>
